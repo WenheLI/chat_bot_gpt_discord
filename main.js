@@ -11,10 +11,12 @@ client.commands = new Collection();
 
 // user_name to topics
 const subscribeTopics = {
-
 }
 
 const users2Channels = {
+}
+
+const users2Memory = {
 }
 
 let global_channel_id = '1106969100279889953';
@@ -78,15 +80,16 @@ client.on(Events.InteractionCreate, async interaction => {
             // constuct content into id author: content
             return `${it.id} ${it.author}: ${it.content}`;
             }).join('\n');
-      
         let aiData = await axios.post('https://flask-sandy-pi.vercel.app/topics', {
-                topics: topics[0],
+                topics: "topics[0],",
                 texts: content,
         });
         
         aiData = aiData.data;
+        aiData, memory = aiData.text, aiData.memory;
 
-        aiData = aiData.split('\n')
+        users2Memory[userId] = memory;
+        
         interaction.editReply("got data")
 
 
