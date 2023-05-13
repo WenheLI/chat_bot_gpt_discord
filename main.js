@@ -11,10 +11,12 @@ client.commands = new Collection();
 
 // user_name to topics
 const subscribeTopics = {
-
 }
 
 const users2Channels = {
+}
+
+const users2Memory = {
 }
 
 let global_channel_id = '1106969100279889953';
@@ -52,7 +54,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         subscribeTopics[userId].push(topic);
         console.log(subscribeTopics);
-        await interaction.reply(`You have subscribed to ${topic}`, { ephemeral: true });
+        await interaction.reply(`You have subscribed to ${topic}`);
     }
 
     if (interaction.commandName == 'summary') {
@@ -73,42 +75,21 @@ client.on(Events.InteractionCreate, async interaction => {
                 'timestamp': message.createdTimestamp,
                 'id': message.id,
             }});
-
+        
         const content = formattedMessages.map((it) => {
             // constuct content into id author: content
             return `${it.id} ${it.author}: ${it.content}`;
             }).join('\n');
-
+      
         let aiData = await axios.post('https://flask-sandy-pi.vercel.app/topics', {
-                topics: "sushi",
+                topics: topics[0],
                 texts: content,
         });
         
         aiData = aiData.data;
-        aiData = aiData.split('\n');
-        console.log(aiData);
-        responseMessage = "";
-        topic = aiData[0].replace("Topic: ", "");
-        summary = aiData[1].replace("Summary: ", "");
-        if (summary.startsWith("No relevant")) {
-            await interaction.editReply(`No relevant messages found for ${topic}`)
-        }
-        else {
-            parsedData = aiData.slice(3).map((it) => {
-                const regex = /^[-\*\s]*(\d+)\s+(\w+):\s+(.+)$/;
-                const match = it.match(regex);
 
-                if (match) {
-                    const [, id, sender, message] = match;
-                    return { id, sender, message };
-                } else {
-                    // parsed failed
-                    return null;
-                }
-            });
-            console.log(parsedData);
-        }
-
+        aiData = aiData.split('\n')
+        interaction.editReply("got data")
 
 
     }
