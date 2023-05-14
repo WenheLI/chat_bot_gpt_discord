@@ -53,10 +53,7 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.commandName === 'subscribe') {
         const topic = interaction.options.get('input').value;
         const userId = interaction.user.id;
-        if (!(userId in subscribeTopics)) {
-            subscribeTopics[userId] = [];
-        }
-        subscribeTopics[userId].push(topic);
+        subscribeTopics[userId] = [topic];
         console.log(subscribeTopics);
         await interaction.reply(`You have subscribed to ${topic}`);
     }
