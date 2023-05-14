@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-    // set a input type
+
 	data: new SlashCommandBuilder()
-		.setName('continue')
-		.setDescription('Continue the conversation.')
+		.setName('subscribe')
+		.setDescription('Subscribe to a channel.')
         .addStringOption(option =>
             option.setName('input')
                 .setDescription('Input your message')
