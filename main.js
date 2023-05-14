@@ -46,7 +46,7 @@ client.on(Events.InteractionCreate, async interaction => {
     console.log(`Interaction received: ${interaction.commandName}`);
 	if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName == 'subscribe') {
+    if (interaction.commandName === 'subscribe') {
         const topic = interaction.options.get('input').value;
         const userId = interaction.user.id;
         if (!(userId in subscribeTopics)) {
