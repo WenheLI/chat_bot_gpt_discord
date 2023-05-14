@@ -29,6 +29,7 @@ for (const file of commandFiles) {
 	const command = require(filePath);
 	// Set a new item in the Collection with the key as the command name and the value as the exported module
 	if ('data' in command && 'execute' in command) {
+        console.log(`[INFO] Loading command ${command.data.name} from ${filePath}`);
 		client.commands.set(command.data.name, command);
 	} else {
 		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
@@ -89,10 +90,34 @@ client.on(Events.InteractionCreate, async interaction => {
         aiData, memory = aiData.text, aiData.memory;
 
         users2Memory[userId] = memory;
-        
+
         interaction.editReply("got data")
+    }
 
+    if (interaction.commandName == 'continue') {
+        if (users2Memory[interaction.user.id] == undefined) {
+            await interaction.reply('Please run /summary first.');
+            return;
+        }
+        const userId = interaction.user.id;
+        const memory = users2Memory[userId];
+        const topics = subscribeTopics[userId];
+        const aiData = await axios.post('https://flask-sandy-pi.vercel.app/topics', {
+                topics: topics.join(','),
+                texts: memory,
+        });
+        const text = aiData.data.text;
+        users2Memory[userId].push({
+            'role': 'assistant',
+            'content': text,
+        })
+        await interaction.reply(text);
+    }
 
+    if (interaction.commandName == 'stop') {
+        const userId = interaction.user.id;
+        delete users2Memory[userId];
+        await interaction.reply('Conversation stopped.');
     }
 });
 
