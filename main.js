@@ -82,7 +82,7 @@ client.on(Events.InteractionCreate, async interaction => {
             return `${it.id} ${it.author}: ${it.content}`;
             }).join('\n');
       
-        let aiData = await axios.post('https://flask-sandy-pi.vercel.app/topics', {
+        let aiData = await axios.post('https://flask-ten-iota.vercel.app/topics', {
                 topics: "sushi",
                 texts: content,
         });
@@ -109,8 +109,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 return null;
             }).filter((it) => it != null);
 
-        interaction.editReply("got data")
-    }
+            console.log(parsedData);
             if (parsedData.length === 0) {
                 await interaction.editReply("No relevant message found for this topic");
             }
@@ -133,6 +132,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
             await interaction.editReply({content: responseMsg, components: [row]});
         }
+    }
 
     if (interaction.commandName == 'continue') {
         if (users2Memory[interaction.user.id] == undefined) {
