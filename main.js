@@ -47,7 +47,7 @@ client.on(Events.InteractionCreate, async interaction => {
     console.log(`Interaction received: ${interaction.commandName}`);
 	if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName == 'subscribe') {
+    if (interaction.commandName === 'subscribe') {
         const topic = interaction.options.get('input').value;
         const userId = interaction.user.id;
         if (!(userId in subscribeTopics)) {
@@ -64,7 +64,7 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.reply(`Working on it!`);
 
         const messages = await channel.messages.fetch({
-            limit: 50,
+            limit: 15,
         });
         const userId = interaction.user.id;
         const topics = subscribeTopics[userId];
@@ -104,26 +104,45 @@ client.on(Events.InteractionCreate, async interaction => {
                     const messageId = match[1];
                     const sender = match[2];
                     const content = match[3];
-                    return {messageId, sender, content};
+                    const timeStamp = formattedMessages.find((it) => it.id === messageId).timestamp;
+                    return {messageId, sender, content, timeStamp};
                 }
                 return null;
-            }).filter((it) => it != null);
+            }).filter((it) => it);
 
             console.log(parsedData);
             if (parsedData.length === 0) {
                 await interaction.editReply("No relevant message found for this topic");
+                return;
             }
 
+            parsedData.sort((a, b) => a.timeStamp - b.timeStamp);
+            const groupedData = [[parsedData[0]]];
+            for (let i = 1; i < parsedData.length; i++) {
+                if (parsedData[i].timeStamp - parsedData[i - 1].timeStamp > 1000 * 60 * 20) {
+                    groupedData.push([parsedData[i]]);
+                }
+                else {
+                    groupedData[groupedData.length - 1].push(parsedData[i]);
+                }
+            }
+            console.log(parsedData);
+            console.log(groupedData);
+
+
             let responseMsg = `Topic: ${topic}\nSummary: ${summary}\nRelated Messages\n`;
-            for (let i = 0; i < parsedData.length; i++) {
-                const msg = parsedData[i];
-                responseMsg += `${i + 1}. ${msg.sender}: ${msg.content}\n`;
+            for (let i = 0; i < groupedData.length; i++) {
+                responseMsg += `Relevant dialogue ${i + 1}: \n`;
+                for (let j = 0; j < groupedData[i].length; j++) {
+                    const msg = groupedData[i][j];
+                    responseMsg += `\t${msg.sender}: ${msg.content}\n`;
+                }
             }
             responseMsg += "\nJump to: ";
             const buttons = [];
-            for (let i = 0; i < parsedData.length; i++) {
+            for (let i = 0; i < groupedData.length; i++) {
                 buttons.push(new ButtonBuilder()
-                    .setURL(`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${parsedData[i].messageId}`)
+                    .setURL(`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${groupedData[i][0].messageId}`)
                     .setLabel(`Dialogue ${i + 1}`)
                     .setStyle(ButtonStyle.Link));
             }
