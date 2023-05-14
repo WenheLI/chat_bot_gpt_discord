@@ -2,7 +2,7 @@
 const { token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder} = require('discord.js');
 const axios = require('axios');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -58,13 +58,13 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.reply(`You have subscribed to ${topic}`);
     }
 
-    if (interaction.commandName == 'summary') {
+    if (interaction.commandName === 'summary') {
         // get message from the currnet channel
         const channel = interaction.channel;
         await interaction.reply(`Working on it!`);
 
         const messages = await channel.messages.fetch({
-            limit: 100,
+            limit: 50,
         });
         const userId = interaction.user.id;
         const topics = subscribeTopics[userId];
@@ -81,18 +81,58 @@ client.on(Events.InteractionCreate, async interaction => {
             // constuct content into id author: content
             return `${it.id} ${it.author}: ${it.content}`;
             }).join('\n');
+      
         let aiData = await axios.post('https://flask-sandy-pi.vercel.app/topics', {
-                topics: "topics[0],",
+                topics: "sushi",
                 texts: content,
         });
-        
-        aiData = aiData.data;
-        aiData, memory = aiData.text, aiData.memory;
+        responseStr = aiData.data['text'];
+        users2Memory[userId] = aiData.data['memory'];
 
-        users2Memory[userId] = memory;
+        console.log(responseStr);
+        lines = responseStr.split('\n');
+        const topic = lines[0].replace('Topic: ', '');
+        const summary = lines[1].replace('Summary: ', '');
+        if (lines.length <= 3){
+            await interaction.editReply("No relevant message found for this topic");
+        }
+        else{
+            let parsedData = lines.slice(3).map((it) => {
+                const regex = /^[-\*\s]*(\d+)\s+(\w+):\s+(.+)$/;
+                const match = it.match(regex);
+                if (match) {
+                    const messageId = match[1];
+                    const sender = match[2];
+                    const content = match[3];
+                    return {messageId, sender, content};
+                }
+                return null;
+            }).filter((it) => it != null);
 
         interaction.editReply("got data")
     }
+            if (parsedData.length === 0) {
+                await interaction.editReply("No relevant message found for this topic");
+            }
+
+            let responseMsg = `Topic: ${topic}\nSummary: ${summary}\nRelated Messages\n`;
+            for (let i = 0; i < parsedData.length; i++) {
+                const msg = parsedData[i];
+                responseMsg += `${i + 1}. ${msg.sender}: ${msg.content}\n`;
+            }
+            responseMsg += "\nJump to: ";
+            const buttons = [];
+            for (let i = 0; i < parsedData.length; i++) {
+                buttons.push(new ButtonBuilder()
+                    .setURL(`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${parsedData[i].messageId}`)
+                    .setLabel(`Dialogue ${i + 1}`)
+                    .setStyle(ButtonStyle.Link));
+            }
+            const row = new ActionRowBuilder()
+                .addComponents(...buttons);
+
+            await interaction.editReply({content: responseMsg, components: [row]});
+        }
 
     if (interaction.commandName == 'continue') {
         if (users2Memory[interaction.user.id] == undefined) {
