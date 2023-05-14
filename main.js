@@ -83,7 +83,7 @@ client.on(Events.InteractionCreate, async interaction => {
             }).join('\n');
       
         let aiData = await axios.post('https://flask-ten-iota.vercel.app/topics', {
-                topics: "sushi",
+                topics: topics[0],
                 texts: content,
         });
         responseStr = aiData.data['text'];
@@ -160,7 +160,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         const userId = interaction.user.id;
         const memory = users2Memory[userId];
-        const aiData = await axios.post('http://localhost:3000/continue', {
+        const aiData = await axios.post('https://flask-ten-iota.vercel.app/continue', {
                 memory: memory,
                 text: interaction.options.get('input').value,
         });
