@@ -11,6 +11,10 @@ module.exports = {
                 .setRequired(true)),
                 
 	async execute(interaction) {
-		await interaction.reply('Pong!');
+        const topic = interaction.options.get('input').value;
+        const userId = interaction.user.id;
+        subscribeTopics[userId] = [topic];
+        console.log(subscribeTopics);
+        await interaction.reply(`You have subscribed to ${topic}`);
 	},
 };

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { ButtonBuilder, ActionRowBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
 const axios = require('axios');
 
 module.exports = {
@@ -15,7 +15,7 @@ module.exports = {
 		});
 		const userId = interaction.user.id;
 		const topics = global.subscribeTopics[userId];
-
+        console.log(userId, "\'s","topics are", topics);
 		const formattedMessages = messages.map(message => {
 			return {
 				'content': message.content,
@@ -30,7 +30,7 @@ module.exports = {
 			}).join('\n');
 	  
 		let aiData = await axios.post('https://flask-ten-iota.vercel.app/topics', {
-				topics: "breakfast",
+				topics: topics[0],
 				texts: content,
 		});
         responseStr = aiData.data['text'];
