@@ -13,14 +13,11 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
 
 // user_name to topics
-client.users2Memory = {};
-client.subscribeTopics = {};
+global.users2Memory = {};
+global.subscribeTopics = {};
 
 // const users2Channels = {
 // }
-
-
-let global_channel_id = '1107055995819135017';
 
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
@@ -62,7 +59,11 @@ client.on(Events.InteractionCreate, async interaction => {
         await command.execute(interaction);
     } catch (error) {
         console.error(error);
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
     }
 });
 

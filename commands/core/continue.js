@@ -23,19 +23,19 @@ module.exports = {
 		.setName('continue')
 		.setDescription('Continue the conversation'),
 	async execute(interaction) {
-		if (client.users2Memory[interaction.user.id] == undefined) {
+		if (global.users2Memory[interaction.user.id] == undefined) {
 			await interaction.reply('Please run /summary first.');
 			return;
 		}
 		const userId = interaction.user.id;
-		const memory = client.users2Memory[userId];
+		const memory = global.users2Memory[userId];
 		const aiData = await axios.post('https://flask-ten-iota.vercel.app/continue', {
 				memory: memory,
 				text: interaction.options.get('input').value,
 		});
 		const text = aiData.data.text;
-		console.log(typeof client.users2Memory[userId])
-		client.users2Memory[userId].push({
+		console.log(typeof global.users2Memory[userId])
+		global.users2Memory[userId].push({
 			'role': 'assistant',
 			'content': text,
 		})
