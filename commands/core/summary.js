@@ -15,7 +15,6 @@ module.exports = {
 		});
 		const userId = interaction.user.id;
 		const topics = global.subscribeTopics[userId];
-        console.log(userId, "\'s","topics are", topics);
 		const formattedMessages = messages.map(message => {
 			return {
 				'content': message.content,
