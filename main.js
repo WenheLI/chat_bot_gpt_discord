@@ -64,7 +64,7 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.reply(`Working on it!`);
 
         const messages = await channel.messages.fetch({
-            limit: 15,
+            limit: 50,
         });
         const userId = interaction.user.id;
         const topics = subscribeTopics[userId];
@@ -79,7 +79,7 @@ client.on(Events.InteractionCreate, async interaction => {
         
         const content = formattedMessages.map((it) => {
             // constuct content into id author: content
-            return `${it.id} ${it.author}: ${it.content}`;
+            return `\`${it.id} ${it.author}: ${it.content}\``;
             }).join('\n');
       
         let aiData = await axios.post('https://flask-ten-iota.vercel.app/topics', {
@@ -87,7 +87,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 texts: content,
         });
         responseStr = aiData.data['text'];
-        users2Memory[userId] = aiData.data['memory'];
+        users2Memory[userId] = JSON.parse(aiData.data['memory']);
 
         console.log(responseStr);
         lines = responseStr.split('\n');
@@ -160,12 +160,12 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         const userId = interaction.user.id;
         const memory = users2Memory[userId];
-        const topics = subscribeTopics[userId];
-        const aiData = await axios.post('https://flask-sandy-pi.vercel.app/topics', {
-                topics: topics.join(','),
-                texts: memory,
+        const aiData = await axios.post('http://localhost:3000/continue', {
+                memory: memory,
+                text: interaction.options.get('input').value,
         });
         const text = aiData.data.text;
+        console.log(typeof users2Memory[userId])
         users2Memory[userId].push({
             'role': 'assistant',
             'content': text,
